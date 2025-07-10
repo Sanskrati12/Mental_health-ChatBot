@@ -21,35 +21,32 @@ from spacy_langdetect import LanguageDetector
 
 # translator pipeline for english to swahili translations
 
-eng_swa_tokenizer = AutoTokenizer.from_pretrained("Rogendo/en-sw")
-eng_swa_model = AutoModelForSeq2SeqLM.from_pretrained("Rogendo/en-sw")
+eng_hin_tokenizer = AutoTokenizer.from_pretrained("Helsinki-NLP/opus-mt-en-hi")
+eng_hin_model = AutoModelForSeq2SeqLM.from_pretrained("Helsinki-NLP/opus-mt-en-hi")
 
-eng_swa_translator = pipeline(
+eng_hin_translator = pipeline(
     "text2text-generation",
-    model = eng_swa_model,
-    tokenizer = eng_swa_tokenizer,
+    model=eng_hin_model,
+    tokenizer=eng_hin_tokenizer
 )
 
-def translate_text_eng_swa(text):
-    translated_text = eng_swa_translator(text, max_length=128, num_beams=5)[0]['generated_text']
-    return translated_text
+def translate_text_eng_hin(text):
+    return eng_hin_translator(text, max_length=128, num_beams=5)[0]['generated_text']
 
 
 # translator pipeline for swahili to english translations
 
-swa_eng_tokenizer = AutoTokenizer.from_pretrained("Rogendo/sw-en")
-swa_eng_model = AutoModelForSeq2SeqLM.from_pretrained("Rogendo/sw-en")
+hin_eng_tokenizer = AutoTokenizer.from_pretrained("Helsinki-NLP/opus-mt-hi-en")
+hin_eng_model = AutoModelForSeq2SeqLM.from_pretrained("Helsinki-NLP/opus-mt-hi-en")
 
-swa_eng_translator = pipeline(
+hin_eng_translator = pipeline(
     "text2text-generation",
-    model = swa_eng_model,
-    tokenizer = swa_eng_tokenizer,
+    model=hin_eng_model,
+    tokenizer=hin_eng_tokenizer
 )
 
-def translate_text_swa_eng(text):
-  translated_text = swa_eng_translator(text,max_length=128, num_beams=5)[0]['generated_text']
-  return translated_text
-
+def translate_text_hin_eng(text):
+    return hin_eng_translator(text, max_length=128, num_beams=5)[0]['generated_text']
 
 def get_lang_detector(nlp, name):
     return LanguageDetector()
@@ -115,12 +112,12 @@ def chatbot_response(msg):
     if detected_language == "en":
         res = getResponse(predict_class(msg, model), intents)
         chatbotResponse = res
-        print("en_sw chatbot_response:- ", res)
-    elif detected_language == 'sw':
-        translated_msg = translate_text_swa_eng(msg)
+        print("en_hin chatbot_response:- ", res)
+    elif detected_language == 'hi':
+        translated_msg = translate_text_hin_eng(msg)
         res = getResponse(predict_class(translated_msg, model), intents)
-        chatbotResponse = translate_text_eng_swa(res)
-        print("sw_en chatbot_response:- ", chatbotResponse)
+        chatbotResponse = translate_text_eng_hin(res)
+        print("hin_en chatbot_response:- ", chatbotResponse)
 
     return chatbotResponse
 
@@ -144,16 +141,16 @@ def get_bot_response():
 
     if detected_language == "en":
         bot_response_translate = userText  
-        print("en_sw get_bot_response:-", bot_response_translate)
+        print("en_hi get_bot_response:-", bot_response_translate)
         
-    elif detected_language == 'sw':
-        bot_response_translate = translate_text_swa_eng(userText)  
-        print("sw_en get_bot_response:-", bot_response_translate)
+    elif detected_language == 'hi':
+        bot_response_translate = translate_text_hin_eng(userText)  
+        print("hi_en get_bot_response:-", bot_response_translate)
 
     chatbot_response_text = chatbot_response(bot_response_translate)
 
-    if detected_language == 'sw':
-        chatbot_response_text = translate_text_eng_swa(chatbot_response_text)
+    if detected_language == 'hi':
+        chatbot_response_text = translate_text_eng_hin(chatbot_response_text)
 
     return chatbot_response_text
 
